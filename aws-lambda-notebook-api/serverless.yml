@@ -1,0 +1,55 @@
+service: aws-lambda-notebook-api
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  lambdaHashingVersion: '20201221'
+  region: eu-central-1
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:*
+      Resource:
+        - arn:aws:dynamodb:eu-central-1:291749393564:table/NotesTable
+
+functions:
+  hello:
+    handler: src/hello.hello
+    events:
+      - httpApi:
+          path: /
+          method: get
+  addNote:
+    handler: src/addNote.addNote
+    events:
+      - httpApi:
+          path: /notes
+          method: post
+  
+  getNotes:
+    handler: src/getNotes.getNotes
+    events:
+      - httpApi:
+          path: /notes
+          method: get
+  getOptions:
+    handler: src/getOptions.getOptions
+    events:
+      - httpApi:
+          path: /notes
+          method: options
+
+resources:
+  Resources:
+    NotesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: NotesTable
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
